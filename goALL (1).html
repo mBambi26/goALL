@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>goALL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #faf6ef; --surface: #ffffff; --surface2: #ede6d8;
+  --border: rgba(180,140,90,0.18); --border-hover: rgba(180,140,90,0.35);
+  --text: #2a1f12; --muted: #9a8570; --accent: #c9622f;
+  --accent2: #e8a45a; --accent-light: rgba(201,98,47,0.1);
+  --gold: #b8861e; --gold-light: rgba(184,134,30,0.1);
+  --green: #3d8c58; --green-light: rgba(61,140,88,0.1);
+  --mandatory-bg: rgba(201,98,47,0.06); --mandatory-border: rgba(201,98,47,0.22);
+  --red: #cc3d3d; --red-light: rgba(204,61,61,0.08);
+}
+html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0 0 6rem; }
+
+/* ── TAB BAR ── */
+.tab-bar { width: 100%; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; justify-content: center; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 8px rgba(180,140,90,0.06); }
+.tab-bar-inner { display: flex; max-width: 680px; width: 100%; position: relative; }
+.tab-btn { flex: 1; padding: 17px 0; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; background: none; border: none; color: var(--muted); cursor: pointer; border-bottom: 2.5px solid transparent; transition: color 0.15s, border-color 0.15s; }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.gear-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: all 0.15s; color: var(--muted); }
+.gear-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); transform: translateY(-50%) rotate(30deg); }
+
+/* ── PAGES ── */
+.page { display: none; width: 100%; max-width: 680px; padding: 2.2rem 2rem 3rem; flex-direction: column; align-items: center; }
+.page.visible { display: flex; }
+
+/* ── LOGO / HEADER ── */
+.logo-wrap { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.6rem; }
+.logo { font-size: 46px; font-weight: 800; letter-spacing: -2.5px; color: var(--text); line-height: 1.1; }
+.logo em { color: var(--accent); font-style: normal; }
+.date-pill { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 99px; padding: 7px 15px; }
+.clock-bar { width: 100%; display: flex; align-items: center; gap: 12px; margin-bottom: 1.4rem; }
+.clock-day { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.clock-time { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--text); letter-spacing: -0.5px; }
+.clock-sep { flex: 1; height: 1px; background: var(--border); }
+
+/* ── QUOTE ── */
+.quote-block { width: 100%; background: linear-gradient(135deg,#fff9f3,#fff1e4); border: 1px solid rgba(201,98,47,0.14); border-left: 3.5px solid var(--accent); border-radius: 16px; padding: 18px 20px; margin-bottom: 2.2rem; }
+.quote-text { font-size: 14px; font-style: italic; color: var(--text); line-height: 1.65; margin-bottom: 7px; }
+.quote-author { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); }
+
+/* ── SECTION LABEL ── */
+.section-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1.3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; width: 100%; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── CARD STACK ── */
+.stack-section { width: 100%; margin-bottom: 1.8rem; }
+.card-stack { position: relative; height: 260px; width: 100%; }
+.card-stack.empty { display: flex; align-items: center; justify-content: center; background: var(--surface2); border: 2px dashed var(--border); border-radius: 24px; height: 130px; }
+.empty-msg { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+.task-card { position: absolute; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 34px 32px 30px; cursor: grab; touch-action: none; will-change: transform; box-shadow: 0 6px 28px rgba(180,140,90,0.11); min-height: 220px; display: flex; flex-direction: column; justify-content: space-between; }
+.task-card:active { cursor: grabbing; }
+.task-card.top { z-index: 10; }
+.task-card.back1 { transform: translateY(8px) scale(0.97); z-index: 1; pointer-events: none; filter: brightness(0.98); }
+.task-card.back2 { transform: translateY(16px) scale(0.94); z-index: 0; pointer-events: none; filter: brightness(0.96); }
+.card-top { display: flex; flex-direction: column; }
+.card-tag { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.card-task { font-size: 28px; font-weight: 800; line-height: 1.18; color: var(--text); letter-spacing: -0.5px; }
+.card-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.points-badge { background: var(--gold-light); color: var(--gold); font-size: 13px; font-family: 'DM Mono', monospace; padding: 6px 14px; border-radius: 99px; font-weight: 500; }
+.repeats-badge { background: rgba(100,100,100,0.07); color: var(--muted); font-size: 13px; font-family: 'DM Mono', monospace; padding: 6px 14px; border-radius: 99px; }
+.swipe-hint { position: absolute; top: 22px; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; padding: 5px 14px; border-radius: 9px; opacity: 0; pointer-events: none; border: 2px solid; z-index: 20; transition: opacity 0.08s; }
+.swipe-hint.yes { right: 22px; color: var(--green); border-color: var(--green); background: var(--green-light); }
+.swipe-hint.nope { left: 22px; color: var(--red); border-color: var(--red); background: var(--red-light); }
+.swipe-btns { display: flex; justify-content: center; gap: 28px; margin-top: 20px; }
+.swipe-btn { width: 62px; height: 62px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.18s cubic-bezier(0.34,1.56,0.64,1); font-size: 24px; box-shadow: 0 4px 16px rgba(180,140,90,0.1); }
+.swipe-btn:hover { transform: scale(1.14); }
+.swipe-btn:active { transform: scale(0.92); }
+.swipe-btn.skip:hover { border-color: var(--red); background: var(--red-light); }
+.swipe-btn.go:hover { border-color: var(--green); background: var(--green-light); }
+
+/* ── TASKS TAB ── */
+.mandatory-item { width: 100%; background: var(--mandatory-bg); border: 1px solid var(--mandatory-border); border-radius: 18px; padding: 20px 22px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+.mandatory-item.locked-time { opacity: 0.52; }
+.mandatory-badge { font-family: 'DM Mono', monospace; font-size: 10px; background: var(--accent); color: white; border-radius: 7px; padding: 3px 9px; letter-spacing: 0.5px; flex-shrink: 0; text-transform: uppercase; }
+.mandatory-item-text { flex: 1; min-width: 0; }
+.mandatory-item-name { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.mandatory-item-sub { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--muted); }
+.active-item { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 20px 22px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; box-shadow: 0 2px 12px rgba(180,140,90,0.06); animation: slideIn 0.22s ease; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.active-item-text { flex: 1; min-width: 0; }
+.active-item-name { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.active-item-sub { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--muted); }
+.done-item { width: 100%; background: rgba(61,140,88,0.05); border: 1px solid rgba(61,140,88,0.2); border-radius: 18px; padding: 16px 22px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; opacity: 0.75; }
+.done-item-text { flex: 1; min-width: 0; }
+.done-item-name { font-size: 16px; font-weight: 600; color: var(--text); text-decoration: line-through; opacity: 0.6; margin-bottom: 3px; }
+.done-item-sub { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--green); }
+.done-check { width: 30px; height: 30px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; flex-shrink: 0; }
+.done-btn { flex-shrink: 0; background: var(--green); color: white; border: none; border-radius: 99px; font-family: 'DM Mono', monospace; font-size: 12px; padding: 10px 18px; cursor: pointer; transition: opacity 0.15s; white-space: nowrap; font-weight: 500; }
+.done-btn:hover { opacity: 0.82; }
+.done-btn:disabled { background: var(--muted); cursor: not-allowed; opacity: 0.5; }
+.delete-btn { flex-shrink: 0; background: none; color: var(--muted); border: 1.5px solid var(--border); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: all 0.15s; line-height: 1; }
+.delete-btn:hover { background: var(--red-light); border-color: var(--red); color: var(--red); }
+.tasks-empty { width: 100%; text-align: center; padding: 3rem 0 1rem; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); }
+
+/* ── RESET COMPLETED BTN ── */
+.reset-completed-wrap { width: 100%; display: flex; justify-content: flex-end; margin-top: -6px; margin-bottom: 18px; }
+.reset-completed-btn { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 99px; padding: 6px 14px; cursor: pointer; transition: all 0.15s; }
+.reset-completed-btn:hover { border-color: var(--red); color: var(--red); }
+.reset-completed-btn.confirm { border-color: var(--red); color: white; background: var(--red); }
+
+/* ── SCROLL POINTS TAB ── */
+.points-hero { width: 100%; background: linear-gradient(135deg,#fff3e0,#fde8d0); border: 1px solid rgba(201,98,47,0.18); border-radius: 26px; padding: 38px 28px 30px; text-align: center; margin-bottom: 2.2rem; position: relative; overflow: hidden; }
+.points-hero::before { content: ''; position: absolute; top: -50px; right: -50px; width: 160px; height: 160px; background: radial-gradient(circle,rgba(201,98,47,0.1),transparent 70%); border-radius: 50%; }
+.points-label { font-family: 'DM Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1.3px; color: var(--accent); margin-bottom: 10px; }
+.points-number { font-size: 88px; font-weight: 800; color: var(--accent); line-height: 1; letter-spacing: -5px; margin-bottom: 6px; }
+.points-unit { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.conversion-box { background: rgba(255,255,255,0.75); border: 1px solid rgba(201,98,47,0.14); border-radius: 14px; padding: 14px 18px; display: inline-flex; flex-direction: column; gap: 6px; text-align: left; width: 100%; }
+.conversion-row { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 10px; }
+.conversion-row .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; flex-shrink: 0; }
+.conversion-row strong { color: var(--accent); }
+.claim-section { width: 100%; margin-bottom: 2.2rem; }
+.claim-info { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 20px 22px; margin-bottom: 14px; }
+.claim-info p { font-size: 14px; color: var(--muted); font-family: 'DM Mono', monospace; line-height: 1.65; }
+.claim-info p strong { color: var(--text); }
+.claim-btn { width: 100%; background: var(--accent); color: white; border: none; border-radius: 99px; font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; padding: 17px; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+.claim-btn:hover { opacity: 0.88; transform: scale(1.01); }
+.claim-btn:disabled { background: var(--muted); cursor: not-allowed; transform: none; opacity: 0.6; }
+.scroll-timer { text-align: center; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.points-log { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.log-item { background: var(--surface); border: 1px solid var(--border); border-radius: 13px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
+.log-task { font-size: 14px; font-weight: 500; color: var(--text); }
+.log-pts { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+
+/* ── SCROLL CLAIM OVERLAY ── */
+.scroll-overlay { position: fixed; inset: 0; background: rgba(42,31,18,0.55); display: flex; align-items: center; justify-content: center; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.25s; padding: 2rem; }
+.scroll-overlay.show { opacity: 1; pointer-events: all; }
+.scroll-modal { background: var(--surface); border-radius: 30px; padding: 38px 28px; max-width: 400px; width: 100%; text-align: center; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.scroll-overlay.show .scroll-modal { transform: scale(1); }
+.scroll-modal-emoji { font-size: 54px; margin-bottom: 12px; }
+.scroll-modal-title { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.scroll-modal-pts { font-size: 60px; font-weight: 800; color: var(--accent); letter-spacing: -3px; margin-bottom: 4px; }
+.scroll-modal-sub { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.scroll-modal-videos { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 26px; }
+.scroll-btn { width: 100%; background: var(--accent); color: white; border: none; border-radius: 99px; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; padding: 15px; cursor: pointer; transition: opacity 0.15s; }
+.scroll-btn:hover { opacity: 0.88; }
+
+/* ── REWARD MODAL ── */
+.modal-wrap { position: fixed; inset: 0; background: rgba(42,31,18,0.5); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 1.5rem; }
+.modal-wrap.show { opacity: 1; pointer-events: all; }
+.modal { background: var(--surface); border-radius: 28px; padding: 38px 28px; max-width: 400px; width: 100%; text-align: center; transform: scale(0.92); transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+.modal-wrap.show .modal { transform: scale(1); }
+.modal-emoji { font-size: 54px; margin-bottom: 14px; }
+.modal-title { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.modal-task { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.modal-pts-earned { font-size: 15px; font-family: 'DM Mono', monospace; color: var(--gold); margin-bottom: 22px; }
+.modal-btn { width: 100%; background: var(--accent); color: white; border: none; border-radius: 99px; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; padding: 15px; cursor: pointer; transition: opacity 0.15s; }
+.modal-btn:hover { opacity: 0.88; }
+
+/* ── BULK PICKER ── */
+.bulk-overlay { position: fixed; inset: 0; background: rgba(42,31,18,0.52); display: flex; align-items: flex-end; justify-content: center; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.bulk-overlay.show { opacity: 1; pointer-events: all; }
+.bulk-sheet { background: var(--surface); border-radius: 28px 28px 0 0; padding: 28px 24px 36px; width: 100%; max-width: 680px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.34,1.2,0.64,1); }
+.bulk-overlay.show .bulk-sheet { transform: translateY(0); }
+.bulk-handle { width: 40px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 20px; }
+.bulk-title { font-size: 11px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin-bottom: 6px; }
+.bulk-task-name { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 22px; letter-spacing: -0.3px; }
+.bulk-options { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+.bulk-opt { flex: 1; min-width: 56px; padding: 14px 8px; border-radius: 14px; border: 1.5px solid var(--border); background: var(--surface); font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--text); cursor: pointer; text-align: center; transition: all 0.13s; }
+.bulk-opt:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+.bulk-opt.selected { border-color: var(--accent); background: var(--accent); color: white; }
+.bulk-pts-preview { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--gold); text-align: center; margin-bottom: 18px; min-height: 20px; }
+.bulk-confirm { width: 100%; background: var(--accent); color: white; border: none; border-radius: 99px; font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; padding: 16px; cursor: pointer; transition: opacity 0.15s; }
+.bulk-confirm:hover { opacity: 0.88; }
+.bulk-cancel { width: 100%; background: none; border: none; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); cursor: pointer; padding: 12px; margin-top: 4px; }
+
+/* ── SETTINGS PANEL ── */
+.settings-overlay { position: fixed; inset: 0; background: rgba(42,31,18,0.48); z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.settings-overlay.show { opacity: 1; pointer-events: all; }
+.settings-panel { position: fixed; top: 0; right: 0; height: 100%; width: min(420px, 100vw); background: var(--bg); z-index: 501; transform: translateX(100%); transition: transform 0.32s cubic-bezier(0.4,0,0.2,1); display: flex; flex-direction: column; box-shadow: -8px 0 40px rgba(42,31,18,0.18); }
+.settings-panel.show { transform: translateX(0); }
+.settings-header { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 18px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+.settings-title { font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+.settings-close { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--border); background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; color: var(--muted); transition: all 0.15s; }
+.settings-close:hover { border-color: var(--accent); color: var(--accent); }
+
+/* settings tabs */
+.stab-bar { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+.stab-btn { flex: 1; padding: 13px 4px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase; background: none; border: none; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+.stab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.settings-body { flex: 1; overflow-y: auto; padding: 24px 20px 40px; display: flex; flex-direction: column; gap: 20px; }
+
+/* settings section */
+.s-section-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.s-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px 20px; }
+
+/* task list in settings */
+.stask-item { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.stask-item:last-child { border-bottom: none; padding-bottom: 0; }
+.stask-item:first-child { padding-top: 0; }
+.stask-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); min-width: 0; }
+.stask-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
+.stask-del { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: none; color: var(--muted); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.13s; flex-shrink: 0; }
+.stask-del:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+/* add task form */
+.add-task-form { display: flex; flex-direction: column; gap: 12px; }
+.s-input { width: 100%; padding: 11px 15px; border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Syne', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); outline: none; transition: border-color 0.15s; }
+.s-input:focus { border-color: var(--accent); }
+.s-row { display: flex; gap: 10px; }
+.s-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.s-col { flex: 1; display: flex; flex-direction: column; }
+.s-select { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 12px; font-family: 'DM Mono', monospace; font-size: 13px; background: var(--bg); color: var(--text); outline: none; cursor: pointer; transition: border-color 0.15s; }
+.s-select:focus { border-color: var(--accent); }
+.s-checkbox-row { display: flex; align-items: center; gap: 10px; }
+.s-checkbox-row input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
+.s-add-btn { background: var(--accent); color: white; border: none; border-radius: 99px; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; padding: 12px 20px; cursor: pointer; transition: opacity 0.15s; }
+.s-add-btn:hover { opacity: 0.88; }
+
+/* progression chart */
+.prog-chart-wrap { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px 16px 12px; }
+.prog-bars { display: flex; align-items: flex-end; gap: 6px; height: 120px; width: 100%; }
+.prog-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; justify-content: flex-end; }
+.prog-bar { width: 100%; border-radius: 7px 7px 0 0; background: var(--accent-light); border: 1.5px solid var(--border); transition: height 0.4s cubic-bezier(0.34,1.2,0.64,1); min-height: 4px; position: relative; cursor: default; }
+.prog-bar.today { background: var(--accent); border-color: var(--accent); }
+.prog-bar-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); }
+.prog-bar-pts { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); }
+.prog-bar.today .prog-bar-pts { color: var(--accent); font-weight: 500; }
+.prog-avg-row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.prog-avg-label { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+.prog-avg-val { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--gold); font-weight: 500; }
+.prog-actions { display: flex; flex-direction: column; gap: 10px; }
+.prog-action-btn { width: 100%; padding: 13px; border-radius: 14px; border: 1.5px solid var(--border); background: none; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: left; }
+.prog-action-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+.prog-action-btn.danger { border-color: var(--red); color: var(--red); }
+.prog-action-btn.confirm-danger { background: var(--red); color: white; border-color: var(--red); }
+
+/* settings prefs */
+.s-pref-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.s-pref-row:last-child { border-bottom: none; }
+.s-pref-label { font-size: 14px; font-weight: 600; color: var(--text); }
+.s-pref-sub { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Tab bar -->
+<div class="tab-bar">
+  <div class="tab-bar-inner">
+    <button class="tab-btn active" onclick="showTab('explore')">Explore</button>
+    <button class="tab-btn" onclick="showTab('tasks')">Tasks</button>
+    <button class="tab-btn" onclick="showTab('scroll')">Scroll Points</button>
+    <button class="gear-btn" onclick="openSettings()" title="Settings">⚙</button>
+  </div>
+</div>
+
+<!-- ══ EXPLORE TAB ══ -->
+<div class="page visible" id="page-explore">
+  <div class="logo-wrap">
+    <div class="logo">go<em>ALL</em></div>
+    <div class="date-pill" id="date-pill">today</div>
+  </div>
+  <div class="clock-bar">
+    <span class="clock-day" id="clock-day"></span>
+    <span class="clock-time" id="clock-time"></span>
+    <span class="clock-sep"></span>
+  </div>
+  <div class="quote-block">
+    <div class="quote-text">"No matter what you do, give it everything you have. Be the best, not the second best."</div>
+    <div class="quote-author">— Michael Jackson</div>
+  </div>
+  <div class="stack-section">
+    <div class="section-label">up next</div>
+    <div class="card-stack" id="card-stack"></div>
+    <div class="swipe-btns">
+      <button class="swipe-btn skip" onclick="triggerSwipeLeft()" title="skip">✕</button>
+      <button class="swipe-btn go" onclick="triggerSwipeRight()" title="lock in">✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TASKS TAB ══ -->
+<div class="page" id="page-tasks">
+  <div class="logo-wrap" style="margin-bottom:1.2rem;">
+    <div class="logo" style="font-size:34px;">Tasks</div>
+    <div class="date-pill" id="date-pill-tasks">today</div>
+  </div>
+  <div style="width:100%; margin-bottom:1.8rem;">
+    <div class="section-label">mandatory</div>
+    <div id="mandatory-list"></div>
+  </div>
+  <div style="width:100%; margin-bottom:1.8rem;" id="active-wrap">
+    <div class="section-label">active</div>
+    <div id="active-list"></div>
+  </div>
+  <div style="width:100%;" id="done-wrap">
+    <div class="section-label" style="justify-content:space-between;">
+      <span>completed today</span>
+      <button class="reset-completed-btn" id="reset-done-btn" onclick="resetCompleted()">reset completed</button>
+    </div>
+    <div id="done-list"></div>
+  </div>
+</div>
+
+<!-- ══ SCROLL POINTS TAB ══ -->
+<div class="page" id="page-scroll" style="align-items:stretch;">
+  <div class="points-hero">
+    <div class="points-label">scroll points today</div>
+    <div class="points-number" id="scroll-pts-display">0</div>
+    <div class="points-unit">points earned</div>
+    <div class="conversion-box">
+      <div class="conversion-row"><span class="dot"></span><span><strong>1 scroll point</strong> = 1 scroll</span></div>
+      <div class="conversion-row"><span class="dot"></span><span><strong>10 scroll points</strong> = 1 video (~20 min)</span></div>
+    </div>
+  </div>
+  <div class="claim-section">
+    <div class="section-label">claim your scroll</div>
+    <div class="claim-info">
+      <p>You can claim your scroll points after <strong id="claim-hour-display">9:00 PM</strong>. Each claim converts your points into screen time — enjoy what you earned.</p>
+    </div>
+    <button class="claim-btn" id="claim-btn" onclick="claimScroll()">claim scroll time</button>
+    <div class="scroll-timer" id="scroll-timer"></div>
+  </div>
+  <div class="section-label">earned today</div>
+  <div class="points-log" id="points-log"></div>
+</div>
+
+<!-- Reward modal -->
+<div class="modal-wrap" id="modal">
+  <div class="modal">
+    <div class="modal-emoji">🌟</div>
+    <div class="modal-title">task complete</div>
+    <div class="modal-task" id="modal-task"></div>
+    <div class="modal-pts-earned" id="modal-pts"></div>
+    <button class="modal-btn" onclick="closeModal()">let's go →</button>
+  </div>
+</div>
+
+<!-- Scroll claim overlay -->
+<div class="scroll-overlay" id="scroll-overlay">
+  <div class="scroll-modal">
+    <div class="scroll-modal-emoji">📱</div>
+    <div class="scroll-modal-title">scroll unlocked</div>
+    <div class="scroll-modal-pts" id="so-pts">0</div>
+    <div class="scroll-modal-sub">scroll points =</div>
+    <div class="scroll-modal-videos" id="so-videos">— videos</div>
+    <button class="scroll-btn" onclick="closeScrollOverlay()">enjoy your scroll ✦</button>
+  </div>
+</div>
+
+<!-- Bulk picker -->
+<div class="bulk-overlay" id="bulk-overlay">
+  <div class="bulk-sheet">
+    <div class="bulk-handle"></div>
+    <div class="bulk-title">how many times?</div>
+    <div class="bulk-task-name" id="bulk-task-name"></div>
+    <div class="bulk-options" id="bulk-options"></div>
+    <div class="bulk-pts-preview" id="bulk-pts-preview"></div>
+    <button class="bulk-confirm" onclick="confirmBulk()">lock in →</button>
+    <button class="bulk-cancel" onclick="closeBulk()">cancel</button>
+  </div>
+</div>
+
+<!-- ══ SETTINGS PANEL ══ -->
+<div class="settings-overlay" id="settings-overlay" onclick="closeSettings()"></div>
+<div class="settings-panel" id="settings-panel">
+  <div class="settings-header">
+    <div class="settings-title">⚙ Settings</div>
+    <button class="settings-close" onclick="closeSettings()">✕</button>
+  </div>
+  <div class="stab-bar">
+    <button class="stab-btn active" onclick="showStab('tasks')">Manage Tasks</button>
+    <button class="stab-btn" onclick="showStab('progression')">Progression</button>
+    <button class="stab-btn" onclick="showStab('prefs')">Settings</button>
+  </div>
+  <div class="settings-body" id="settings-body"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA — seeded defaults (user can add/remove)
+// ═══════════════════════════════════════════════
+const DEFAULT_MANDATORY = [
+  { task: "Be thankful",            points: 2, afterHour: 20 },
+  { task: "Spread kindness thrice", points: 3, afterHour: null },
+  { task: "Talk to 2 girls",        points: 2, afterHour: null },
+];
+
+const DEFAULT_SWIPEABLE = [
+  { task: "Solve 20 math questions", points: 2, maxRepeats: Infinity, bulkable: true,  singularLabel: 'Solve 20 math questions',  pluralTemplate: 'Solve {n}×20 math questions' },
+  { task: "Read 10 pages of a book", points: 2, maxRepeats: 3,        bulkable: true,  singularLabel: 'Read 10 pages of a book',  pluralTemplate: 'Read {n}×10 pages of a book' },
+  { task: "Play the piano for 30 min",points:2, maxRepeats: 2,        bulkable: false },
+  { task: "Read a news article",     points: 1, maxRepeats: 3,        bulkable: true,  singularLabel: 'Read a news article',      pluralTemplate: 'Read {n} news articles' },
+  { task: "Walk for 20 min",         points: 3, maxRepeats: 1,        bulkable: false },
+  { task: "Nothingness for 10 min",  points: 1, maxRepeats: 1,        bulkable: false },
+  { task: "Brain dump for 10 min",   points: 1, maxRepeats: 1,        bulkable: false },
+];
+
+const STORAGE_KEY = 'goall_v5';
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let MANDATORY = [], SWIPEABLE = [];
+let pile = [], active = [], mandatoryDone = [];
+let scrollPoints = 0, pointsLog = [], claimed = false;
+let completedSwipeable = [];
+let claimHour = 21; // configurable
+let progression = {}; // { "YYYY-M-D": points }
+let resetConfirmStep = 0, deleteAllConfirmStep = 0;
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+// ═══════════════════════════════════════════════
+// PERSIST
+// ═══════════════════════════════════════════════
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    date: todayStr(), pile, active, mandatoryDone,
+    scrollPoints, pointsLog, claimed, completedSwipeable,
+    MANDATORY, SWIPEABLE, claimHour, progression
+  }));
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) { initTaskData(); return initFresh(); }
+    const d = JSON.parse(raw);
+    MANDATORY  = d.MANDATORY  || JSON.parse(JSON.stringify(DEFAULT_MANDATORY));
+    SWIPEABLE  = d.SWIPEABLE  || JSON.parse(JSON.stringify(DEFAULT_SWIPEABLE));
+    claimHour  = d.claimHour  != null ? d.claimHour : 21;
+    progression= d.progression|| {};
+    if (d.date !== todayStr()) {
+      // save yesterday's score before reset
+      if (d.scrollPoints) progression[d.date] = d.scrollPoints;
+      return initFresh();
+    }
+    pile = d.pile; active = d.active;
+    mandatoryDone = d.mandatoryDone || MANDATORY.map(() => false);
+    scrollPoints = d.scrollPoints || 0;
+    pointsLog = d.pointsLog || [];
+    claimed = d.claimed || false;
+    completedSwipeable = d.completedSwipeable || [];
+  } catch(e) { initTaskData(); initFresh(); }
+}
+
+function initTaskData() {
+  MANDATORY = JSON.parse(JSON.stringify(DEFAULT_MANDATORY));
+  SWIPEABLE = JSON.parse(JSON.stringify(DEFAULT_SWIPEABLE));
+}
+
+function initFresh() {
+  let slots = [];
+  SWIPEABLE.forEach((t, i) => {
+    const reps = isFinite(t.maxRepeats) ? t.maxRepeats : 3;
+    for (let r = 0; r < reps; r++) slots.push({ idx: i, rep: r });
+  });
+  pile = shuffle(slots);
+  active = []; mandatoryDone = MANDATORY.map(() => false);
+  scrollPoints = 0; pointsLog = []; claimed = false;
+  completedSwipeable = [];
+  progression[todayStr()] = 0;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ═══════════════════════════════════════════════
+// TIME HELPERS
+// ═══════════════════════════════════════════════
+function isAfterHour(h) { return new Date().getHours() >= h; }
+function isAfterClaim() { return isAfterHour(claimHour); }
+
+function minutesUntilHour(h) {
+  const now = new Date(), t = new Date(now);
+  t.setHours(h,0,0,0);
+  if (now >= t) return 0;
+  return Math.ceil((t - now) / 60000);
+}
+
+function fmtHour(h) {
+  if (h === 0) return '12:00 AM';
+  if (h < 12) return `${h}:00 AM`;
+  if (h === 12) return '12:00 PM';
+  return `${h-12}:00 PM`;
+}
+
+// ═══════════════════════════════════════════════
+// SWIPE LOGIC
+// ═══════════════════════════════════════════════
+let bulkPendingSlot = null, bulkSelectedQty = 1;
+
+function swipeRight() {
+  if (!pile.length) return;
+  const slot = pile[0];
+  const t = SWIPEABLE[slot.idx];
+  if (!t) { pile.shift(); save(); renderAll(); return; }
+  if (t.bulkable && isFinite(t.maxRepeats) && t.maxRepeats > 1) {
+    const remaining = pile.filter(s => s.idx === slot.idx).length;
+    openBulk(slot, t, remaining);
+  } else {
+    pile.shift();
+    active.push({ ...slot, qty: 1 });
+    save(); renderAll();
+  }
+}
+
+function swipeLeft() {
+  if (!pile.length) return;
+  pile.push(pile.shift());
+  save(); renderAll();
+}
+
+function triggerSwipeRight() {
+  const card = document.getElementById('top-card');
+  if (!card || !pile.length) return;
+  card.style.transition = 'transform 0.38s cubic-bezier(0.4,0,0.6,1), opacity 0.32s ease';
+  card.style.transform = 'translateX(520px) rotate(18deg)';
+  card.style.opacity = '0';
+  const hy = document.getElementById('hint-yes');
+  if (hy) { hy.style.opacity = '1'; }
+  setTimeout(swipeRight, 340);
+}
+
+function triggerSwipeLeft() {
+  const card = document.getElementById('top-card');
+  if (!card || !pile.length) return;
+  card.style.transition = 'transform 0.38s cubic-bezier(0.4,0,0.6,1), opacity 0.32s ease';
+  card.style.transform = 'translateX(-520px) rotate(-18deg)';
+  card.style.opacity = '0';
+  const hn = document.getElementById('hint-nope');
+  if (hn) { hn.style.opacity = '1'; }
+  setTimeout(swipeLeft, 340);
+}
+
+function openBulk(slot, t, maxQty) {
+  bulkPendingSlot = slot; bulkSelectedQty = 1;
+  document.getElementById('bulk-task-name').textContent = t.singularLabel || t.task;
+  const opts = document.getElementById('bulk-options');
+  opts.innerHTML = '';
+  const cap = Math.min(maxQty, isFinite(t.maxRepeats) ? t.maxRepeats : 5);
+  for (let q = 1; q <= cap; q++) {
+    const btn = document.createElement('button');
+    btn.className = 'bulk-opt' + (q === 1 ? ' selected' : '');
+    btn.textContent = `×${q}`;
+    btn.dataset.qty = q;
+    btn.onclick = () => selectBulkQty(q, t);
+    opts.appendChild(btn);
+  }
+  updateBulkPreview(t, 1);
+  document.getElementById('bulk-overlay').classList.add('show');
+}
+
+function selectBulkQty(qty, t) {
+  bulkSelectedQty = qty;
+  document.querySelectorAll('.bulk-opt').forEach(b => b.classList.toggle('selected', parseInt(b.dataset.qty) === qty));
+  updateBulkPreview(t, qty);
+}
+
+function updateBulkPreview(t, qty) {
+  const pts = t.points * qty;
+  const label = qty === 1 ? (t.singularLabel || t.task) : (t.pluralTemplate || t.task).replace('{n}', qty);
+  document.getElementById('bulk-pts-preview').textContent = `${label} → +${pts} pts`;
+}
+
+function confirmBulk() {
+  if (!bulkPendingSlot) return;
+  const slot = pile[0];
+  const t = SWIPEABLE[slot.idx];
+  let removed = 0;
+  pile = pile.filter(s => { if (s.idx === slot.idx && removed < bulkSelectedQty) { removed++; return false; } return true; });
+  active.push({ ...slot, qty: bulkSelectedQty });
+  bulkPendingSlot = null;
+  closeBulk();
+  save(); renderAll();
+}
+
+function closeBulk() {
+  document.getElementById('bulk-overlay').classList.remove('show');
+  bulkPendingSlot = null;
+}
+
+function deleteActive(i) {
+  const slot = active.splice(i, 1)[0];
+  pile.push(slot);
+  save(); renderAll();
+}
+
+function completeSwipeable(i) {
+  const slot = active[i];
+  const task = SWIPEABLE[slot.idx];
+  if (!task) { active.splice(i, 1); save(); renderAll(); return; }
+  const qty = slot.qty || 1;
+  const label = qty > 1 && task.pluralTemplate ? task.pluralTemplate.replace('{n}', qty) : (task.singularLabel || task.task);
+  const pts = task.points * qty;
+  active.splice(i, 1);
+  completedSwipeable.push({ task: label, pts });
+  scrollPoints += pts;
+  pointsLog.push({ task: label, pts });
+  progression[todayStr()] = scrollPoints;
+  save(); renderAll();
+  showModal(label, pts);
+}
+
+function completeMandatory(i) {
+  if (mandatoryDone[i]) return;
+  const m = MANDATORY[i];
+  if (m.afterHour && !isAfterHour(m.afterHour)) return;
+  mandatoryDone[i] = true;
+  scrollPoints += m.points;
+  pointsLog.push({ task: m.task, pts: m.points });
+  progression[todayStr()] = scrollPoints;
+  save(); renderAll();
+  showModal(m.task, m.points);
+}
+
+// ═══════════════════════════════════════════════
+// RESET COMPLETED (2-step)
+// ═══════════════════════════════════════════════
+function resetCompleted() {
+  const btn = document.getElementById('reset-done-btn');
+  if (resetConfirmStep === 0) {
+    resetConfirmStep = 1;
+    btn.textContent = 'tap again to confirm';
+    btn.classList.add('confirm');
+    setTimeout(() => { resetConfirmStep = 0; btn.textContent = 'reset completed'; btn.classList.remove('confirm'); }, 3000);
+  } else {
+    resetConfirmStep = 0;
+    // Put completed back into pile, subtract points
+    completedSwipeable.forEach(c => {
+      scrollPoints = Math.max(0, scrollPoints - c.pts);
+      pointsLog.push({ task: `↩ reset: ${c.task}`, pts: -c.pts });
+    });
+    completedSwipeable = [];
+    // Reset mandatory
+    mandatoryDone = MANDATORY.map(() => false);
+    pointsLog.push({ task: '↩ completed tasks reset', pts: 0 });
+    progression[todayStr()] = scrollPoints;
+    btn.textContent = 'reset completed';
+    btn.classList.remove('confirm');
+    // Re-init pile from scratch to restore tasks
+    let slots = [];
+    SWIPEABLE.forEach((t, idx) => {
+      const reps = isFinite(t.maxRepeats) ? t.maxRepeats : 3;
+      for (let r = 0; r < reps; r++) slots.push({ idx, rep: r });
+    });
+    // Remove already-active slots from new pile
+    pile = shuffle(slots).filter(s => !active.find(a => a.idx === s.idx && a.rep === s.rep));
+    save(); renderAll();
+  }
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+function renderAll() {
+  const dateFmt = new Date().toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+  document.getElementById('date-pill').textContent = dateFmt;
+  const dp2 = document.getElementById('date-pill-tasks');
+  if (dp2) dp2.textContent = dateFmt;
+  renderStack();
+  renderTasksTab();
+  renderScrollTab();
+}
+
+function renderStack() {
+  const stack = document.getElementById('card-stack');
+  if (!pile.length) {
+    stack.className = 'card-stack empty';
+    stack.innerHTML = '<div class="empty-msg">all tasks locked in ✦</div>';
+    return;
+  }
+  stack.className = 'card-stack';
+  const visible = pile.slice(0, 3);
+  stack.innerHTML = visible.map((slot, li) => {
+    const t = SWIPEABLE[slot.idx];
+    if (!t) return '';
+    const isTop = li === 0;
+    const cls = isTop ? 'top' : (li === 1 ? 'back1' : 'back2');
+    return `<div class="task-card ${cls}" ${isTop ? 'id="top-card"' : ''}>
+      ${isTop ? `<div class="swipe-hint yes" id="hint-yes">GO →</div><div class="swipe-hint nope" id="hint-nope">← SKIP</div>` : ''}
+      <div class="card-top">
+        <div class="card-tag">task</div>
+        <div class="card-task">${t.singularLabel || t.task}</div>
+      </div>
+      <div class="card-meta">
+        <span class="points-badge">+${t.points} pts</span>
+        <span class="repeats-badge">${isFinite(t.maxRepeats) ? '×'+t.maxRepeats : '∞'}</span>
+      </div>
+    </div>`;
+  }).reverse().join('');
+  setupDrag();
+}
+
+function renderTasksTab() {
+  const mandEl = document.getElementById('mandatory-list');
+  mandEl.innerHTML = MANDATORY.map((m, i) => {
+    const done = mandatoryDone[i];
+    const locked = m.afterHour && !isAfterHour(m.afterHour) && !done;
+    if (done) {
+      return `<div class="done-item">
+        <div class="done-item-text"><div class="done-item-name">${m.task}</div><div class="done-item-sub">+${m.points} pts earned ✓</div></div>
+        <div class="done-check">✓</div></div>`;
+    }
+    return `<div class="mandatory-item ${locked ? 'locked-time' : ''}">
+      <div class="mandatory-badge">must</div>
+      <div class="mandatory-item-text">
+        <div class="mandatory-item-name">${m.task}</div>
+        <div class="mandatory-item-sub">+${m.points} pts${locked ? ` — after ${m.afterHour}:00` : ''}</div>
+      </div>
+      <button class="done-btn" onclick="completeMandatory(${i})" ${locked ? 'disabled' : ''}>done ✓</button>
+    </div>`;
+  }).join('');
+
+  const activeWrap = document.getElementById('active-wrap');
+  const activeEl = document.getElementById('active-list');
+  if (!active.length) { activeWrap.style.display = 'none'; }
+  else {
+    activeWrap.style.display = 'block';
+    activeEl.innerHTML = active.map((slot, i) => {
+      const t = SWIPEABLE[slot.idx];
+      if (!t) return '';
+      const qty = slot.qty || 1;
+      const label = qty > 1 && t.pluralTemplate ? t.pluralTemplate.replace('{n}', qty) : (t.singularLabel || t.task);
+      const pts = t.points * qty;
+      return `<div class="active-item">
+        <div class="active-item-text"><div class="active-item-name">${label}</div><div class="active-item-sub">+${pts} scroll points</div></div>
+        <button class="delete-btn" onclick="deleteActive(${i})" title="remove">✕</button>
+        <button class="done-btn" onclick="completeSwipeable(${i})">done ✓</button>
+      </div>`;
+    }).join('');
+  }
+
+  const doneEl = document.getElementById('done-list');
+  if (!completedSwipeable.length) {
+    doneEl.innerHTML = `<div class="tasks-empty">nothing completed yet</div>`;
+  } else {
+    doneEl.innerHTML = [...completedSwipeable].reverse().map(c =>
+      `<div class="done-item">
+        <div class="done-item-text"><div class="done-item-name">${c.task}</div><div class="done-item-sub">+${c.pts} pts earned ✓</div></div>
+        <div class="done-check">✓</div></div>`
+    ).join('');
+  }
+}
+
+function renderScrollTab() {
+  document.getElementById('scroll-pts-display').textContent = scrollPoints;
+  const log = document.getElementById('points-log');
+  const ch = document.getElementById('claim-hour-display');
+  if (ch) ch.textContent = fmtHour(claimHour);
+  log.innerHTML = !pointsLog.length
+    ? `<div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-align:center;padding:24px 0;">no points yet today</div>`
+    : [...pointsLog].reverse().map(e => {
+        const col = e.pts < 0 ? 'var(--red)' : 'var(--gold)';
+        const sign = e.pts > 0 ? '+' : '';
+        const ptsStr = e.pts === 0 ? '' : `${sign}${e.pts} pts`;
+        return `<div class="log-item"><span class="log-task">${e.task}</span><span class="log-pts" style="color:${col}">${ptsStr}</span></div>`;
+      }).join('');
+
+  const btn = document.getElementById('claim-btn');
+  const timer = document.getElementById('scroll-timer');
+  if (claimed) {
+    btn.disabled = true; btn.textContent = 'claimed for today ✓'; timer.textContent = '';
+  } else if (!isAfterClaim()) {
+    btn.disabled = true; btn.textContent = 'claim scroll time';
+    const mins = minutesUntilHour(claimHour);
+    timer.textContent = `available in ${Math.floor(mins/60) > 0 ? Math.floor(mins/60)+'h ' : ''}${mins%60}m`;
+  } else {
+    btn.disabled = scrollPoints === 0; btn.textContent = 'claim scroll time';
+    timer.textContent = scrollPoints === 0 ? 'earn points first' : '';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// DRAG
+// ═══════════════════════════════════════════════
+function setupDrag() {
+  const card = document.getElementById('top-card');
+  if (!card) return;
+  let startX = 0, startY = 0, curX = 0, isDragging = false, velocity = 0, lastX = 0;
+
+  const onStart = (x, y) => {
+    startX = x; startY = y; curX = 0; lastX = x; isDragging = true;
+    card.style.transition = 'none';
+  };
+  const onMove = (x) => {
+    if (!isDragging) return;
+    velocity = x - lastX; lastX = x;
+    curX = x - startX;
+    const rot = curX * 0.055;
+    card.style.transform = `translateX(${curX}px) rotate(${rot}deg)`;
+    const hy = document.getElementById('hint-yes'), hn = document.getElementById('hint-nope');
+    if (hy) hy.style.opacity = curX > 20 ? Math.min((curX-20)/55, 1) : 0;
+    if (hn) hn.style.opacity = curX < -20 ? Math.min((-curX-20)/55, 1) : 0;
+  };
+  const onEnd = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    const THRESHOLD = 75;
+    const flung = Math.abs(velocity) > 10;
+    if (curX > THRESHOLD || (flung && curX > 30)) {
+      card.style.transition = 'transform 0.38s cubic-bezier(0.4,0,0.6,1), opacity 0.32s ease';
+      card.style.transform = `translateX(580px) rotate(20deg)`;
+      card.style.opacity = '0';
+      setTimeout(swipeRight, 340);
+    } else if (curX < -THRESHOLD || (flung && curX < -30)) {
+      card.style.transition = 'transform 0.38s cubic-bezier(0.4,0,0.6,1), opacity 0.32s ease';
+      card.style.transform = `translateX(-580px) rotate(-20deg)`;
+      card.style.opacity = '0';
+      setTimeout(swipeLeft, 340);
+    } else {
+      // Smooth spring bounce back
+      card.style.transition = 'transform 0.5s cubic-bezier(0.34,1.4,0.64,1)';
+      card.style.transform = '';
+    }
+    const hy = document.getElementById('hint-yes'), hn = document.getElementById('hint-nope');
+    if (hy) { hy.style.transition = 'opacity 0.2s'; hy.style.opacity = 0; }
+    if (hn) { hn.style.transition = 'opacity 0.2s'; hn.style.opacity = 0; }
+  };
+
+  card.addEventListener('mousedown', e => onStart(e.clientX, e.clientY));
+  window.addEventListener('mousemove', e => { if (isDragging) onMove(e.clientX); });
+  window.addEventListener('mouseup', onEnd);
+  card.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  window.addEventListener('touchmove', e => { if (isDragging) onMove(e.touches[0].clientX); }, { passive: true });
+  window.addEventListener('touchend', onEnd);
+}
+
+// ═══════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════
+function showModal(taskName, pts) {
+  document.getElementById('modal-task').textContent = taskName;
+  document.getElementById('modal-pts').textContent = `+${pts} scroll points added`;
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+function claimScroll() {
+  if (!isAfterClaim() || scrollPoints === 0 || claimed) return;
+  const videos = Math.floor(scrollPoints / 10);
+  document.getElementById('so-pts').textContent = scrollPoints;
+  document.getElementById('so-videos').textContent = videos > 0 ? `${videos} video${videos>1?'s':''} (~${videos*20} min)` : 'enjoy your scrolls!';
+  document.getElementById('scroll-overlay').classList.add('show');
+  claimed = true; save(); renderScrollTab();
+}
+function closeScrollOverlay() { document.getElementById('scroll-overlay').classList.remove('show'); }
+
+// ═══════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════
+function showTab(tab) {
+  ['explore','tasks','scroll'].forEach((t, i) => {
+    const page = document.getElementById('page-' + t);
+    const btn = document.querySelectorAll('.tab-btn')[i];
+    const isActive = t === tab;
+    page.style.display = isActive ? 'flex' : 'none';
+    if (isActive) page.classList.add('visible'); else page.classList.remove('visible');
+    btn.classList.toggle('active', isActive);
+  });
+  if (tab === 'explore') {
+    const e = document.getElementById('page-explore');
+    e.style.display = ''; e.classList.add('visible');
+  }
+  if (tab === 'scroll') renderScrollTab();
+  if (tab === 'tasks') renderTasksTab();
+}
+
+// ═══════════════════════════════════════════════
+// SETTINGS PANEL
+// ═══════════════════════════════════════════════
+let currentStab = 'tasks';
+
+function openSettings() {
+  document.getElementById('settings-overlay').classList.add('show');
+  document.getElementById('settings-panel').classList.add('show');
+  renderStab(currentStab);
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('show');
+  document.getElementById('settings-panel').classList.remove('show');
+}
+
+function showStab(tab) {
+  currentStab = tab;
+  document.querySelectorAll('.stab-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['tasks','progression','prefs'][i] === tab);
+  });
+  renderStab(tab);
+}
+
+function renderStab(tab) {
+  const body = document.getElementById('settings-body');
+  if (tab === 'tasks') body.innerHTML = renderManageTasksHTML();
+  else if (tab === 'progression') body.innerHTML = renderProgressionHTML();
+  else body.innerHTML = renderPrefsHTML();
+}
+
+// ── MANAGE TASKS ──
+function renderManageTasksHTML() {
+  const mandHTML = MANDATORY.map((m, i) => `
+    <div class="stask-item">
+      <div class="stask-name">${m.task}</div>
+      <div class="stask-meta">${m.points}pt${m.afterHour ? ' · '+m.afterHour+':00' : ''}</div>
+      <button class="stask-del" onclick="deleteMandatory(${i})">✕</button>
+    </div>`).join('') || '<div style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--muted);padding:10px 0">none yet</div>';
+
+  const swipeHTML = SWIPEABLE.map((t, i) => `
+    <div class="stask-item">
+      <div class="stask-name">${t.singularLabel || t.task}</div>
+      <div class="stask-meta">${t.points}pt · ${isFinite(t.maxRepeats) ? '×'+t.maxRepeats : '∞'}</div>
+      <button class="stask-del" onclick="deleteSwipeable(${i})">✕</button>
+    </div>`).join('') || '<div style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--muted);padding:10px 0">none yet</div>';
+
+  // Build hour options
+  let hourOpts = '';
+  for (let h = 0; h < 24; h++) hourOpts += `<option value="${h}">${h === 0 ? '12 AM' : h < 12 ? h+' AM' : h === 12 ? '12 PM' : (h-12)+' PM'}</option>`;
+
+  return `
+  <div>
+    <div class="s-section-label">mandatory tasks</div>
+    <div class="s-card" style="margin-bottom:16px">${mandHTML}</div>
+
+    <div class="s-section-label">add mandatory task</div>
+    <div class="s-card add-task-form" style="margin-bottom:22px">
+      <input class="s-input" id="new-mand-name" placeholder="Task name" />
+      <div class="s-row">
+        <div class="s-col">
+          <div class="s-label">Points (1–10)</div>
+          <input class="s-input" id="new-mand-pts" type="number" min="1" max="10" value="2" />
+        </div>
+        <div class="s-col">
+          <div class="s-label">Unlock after (optional)</div>
+          <select class="s-select" id="new-mand-hour">
+            <option value="">No time lock</option>
+            ${hourOpts}
+          </select>
+        </div>
+      </div>
+      <button class="s-add-btn" onclick="addMandatory()">+ Add Mandatory Task</button>
+    </div>
+
+    <div class="s-section-label">swipeable tasks</div>
+    <div class="s-card" style="margin-bottom:16px">${swipeHTML}</div>
+
+    <div class="s-section-label">add swipeable task</div>
+    <div class="s-card add-task-form">
+      <input class="s-input" id="new-sw-name" placeholder="Task name" />
+      <div class="s-row">
+        <div class="s-col">
+          <div class="s-label">Points (1–10)</div>
+          <input class="s-input" id="new-sw-pts" type="number" min="1" max="10" value="2" />
+        </div>
+        <div class="s-col">
+          <div class="s-label">Max repeats</div>
+          <select class="s-select" id="new-sw-reps">
+            <option value="1">×1</option>
+            <option value="2">×2</option>
+            <option value="3" selected>×3</option>
+            <option value="5">×5</option>
+            <option value="Infinity">Unlimited</option>
+          </select>
+        </div>
+      </div>
+      <div class="s-checkbox-row">
+        <input type="checkbox" id="new-sw-bulk" />
+        <label for="new-sw-bulk" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);cursor:pointer">Bulk-selectable (show ×1/×2/×3 picker)</label>
+      </div>
+      <button class="s-add-btn" onclick="addSwipeable()">+ Add Task</button>
+    </div>
+  </div>`;
+}
+
+function deleteMandatory(i) {
+  MANDATORY.splice(i, 1);
+  mandatoryDone.splice(i, 1);
+  save(); renderAll(); renderStab('tasks');
+}
+
+function deleteSwipeable(i) {
+  // Remove from pile and active too
+  pile = pile.filter(s => s.idx !== i).map(s => ({ ...s, idx: s.idx > i ? s.idx - 1 : s.idx }));
+  active = active.filter(s => s.idx !== i).map(s => ({ ...s, idx: s.idx > i ? s.idx - 1 : s.idx }));
+  SWIPEABLE.splice(i, 1);
+  save(); renderAll(); renderStab('tasks');
+}
+
+function addMandatory() {
+  const name = document.getElementById('new-mand-name').value.trim();
+  const pts = Math.min(10, Math.max(1, parseInt(document.getElementById('new-mand-pts').value) || 2));
+  const hourVal = document.getElementById('new-mand-hour').value;
+  const afterHour = hourVal === '' ? null : parseInt(hourVal);
+  if (!name) { document.getElementById('new-mand-name').style.borderColor = 'var(--red)'; return; }
+  MANDATORY.push({ task: name, points: pts, afterHour });
+  mandatoryDone.push(false);
+  save(); renderAll(); renderStab('tasks');
+}
+
+function addSwipeable() {
+  const name = document.getElementById('new-sw-name').value.trim();
+  const pts = Math.min(10, Math.max(1, parseInt(document.getElementById('new-sw-pts').value) || 2));
+  const repsVal = document.getElementById('new-sw-reps').value;
+  const maxRepeats = repsVal === 'Infinity' ? Infinity : parseInt(repsVal);
+  const bulkable = document.getElementById('new-sw-bulk').checked;
+  if (!name) { document.getElementById('new-sw-name').style.borderColor = 'var(--red)'; return; }
+  const newIdx = SWIPEABLE.length;
+  SWIPEABLE.push({ task: name, points: pts, maxRepeats, bulkable, singularLabel: name, pluralTemplate: name + ' ×{n}' });
+  // Add new slots to pile
+  const reps = isFinite(maxRepeats) ? maxRepeats : 3;
+  for (let r = 0; r < reps; r++) pile.push({ idx: newIdx, rep: r });
+  save(); renderAll(); renderStab('tasks');
+}
+
+// ── PROGRESSION ──
+function renderProgressionHTML() {
+  const today = todayStr();
+  progression[today] = scrollPoints;
+
+  // Build last 7 days
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+    const shortDay = ['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()];
+    days.push({ key, label: shortDay, pts: progression[key] || 0, isToday: key === today });
+  }
+
+  const maxPts = Math.max(...days.map(d => d.pts), 1);
+  const weekTotal = days.slice(0, 6).reduce((s, d) => s + d.pts, 0);
+  const weekAvg = (weekTotal / 6).toFixed(1);
+
+  const barsHTML = days.map(d => {
+    const pct = Math.round((d.pts / maxPts) * 100);
+    return `<div class="prog-bar-col">
+      <div class="prog-bar-pts">${d.pts || ''}</div>
+      <div class="prog-bar ${d.isToday ? 'today' : ''}" style="height:${Math.max(pct, 4)}%"></div>
+      <div class="prog-bar-label">${d.label}</div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div>
+    <div class="s-section-label">weekly overview</div>
+    <div class="prog-chart-wrap">
+      <div class="prog-bars">${barsHTML}</div>
+      <div class="prog-avg-row">
+        <span class="prog-avg-label">6-day avg (excl. today)</span>
+        <span class="prog-avg-val">${weekAvg} pts/day</span>
+      </div>
+    </div>
+
+    <div class="s-section-label" style="margin-top:22px">manage data</div>
+    <div class="prog-actions">
+      <button class="prog-action-btn" id="del-today-btn" onclick="deleteTodayProg()">
+        🗑 Delete today's progression<br><span style="font-size:10px;opacity:0.7">Resets today's points, tasks & completed list</span>
+      </button>
+      <button class="prog-action-btn" id="del-all-btn" onclick="deleteAllProg()">
+        ⚠ Delete all progression<br><span style="font-size:10px;opacity:0.7">Erases all chart history permanently</span>
+      </button>
+    </div>
+  </div>`;
+}
+
+function deleteTodayProg() {
+  const btn = document.getElementById('del-today-btn');
+  if (!btn) return;
+  if (btn.dataset.step !== '1') {
+    btn.dataset.step = '1';
+    btn.classList.add('danger');
+    btn.innerHTML = '⚠ Confirm: reset today?<br><span style="font-size:10px;opacity:0.8">Tap again — this cannot be undone</span>';
+    setTimeout(() => { btn.dataset.step = ''; btn.classList.remove('danger'); btn.innerHTML = '🗑 Delete today\'s progression<br><span style="font-size:10px;opacity:0.7">Resets today\'s points, tasks & completed list</span>'; }, 3500);
+  } else {
+    progression[todayStr()] = 0;
+    initFresh(); save(); renderAll(); renderStab('progression');
+  }
+}
+
+function deleteAllProg() {
+  const btn = document.getElementById('del-all-btn');
+  if (!btn) return;
+  if (btn.dataset.step !== '1') {
+    btn.dataset.step = '1';
+    btn.classList.add('danger');
+    btn.innerHTML = '⚠ Confirm: erase ALL history?<br><span style="font-size:10px;opacity:0.8">Tap again — permanent, no undo</span>';
+    setTimeout(() => { btn.dataset.step = ''; btn.classList.remove('danger'); btn.innerHTML = '⚠ Delete all progression<br><span style="font-size:10px;opacity:0.7">Erases all chart history permanently</span>'; }, 3500);
+  } else {
+    progression = {}; progression[todayStr()] = scrollPoints;
+    save(); renderStab('progression');
+  }
+}
+
+// ── PREFS ──
+function renderPrefsHTML() {
+  let hourOpts = '';
+  for (let h = 14; h <= 23; h++) {
+    const lbl = h < 12 ? `${h}:00 AM` : h === 12 ? '12:00 PM' : `${h-12}:00 PM`;
+    hourOpts += `<option value="${h}" ${h === claimHour ? 'selected' : ''}>${lbl}</option>`;
+  }
+
+  return `
+  <div>
+    <div class="s-section-label">scroll time</div>
+    <div class="s-card">
+      <div class="s-pref-row">
+        <div>
+          <div class="s-pref-label">Claim hour</div>
+          <div class="s-pref-sub">When scroll points become claimable</div>
+        </div>
+        <select class="s-select" style="width:110px" onchange="setClaimHour(this.value)">${hourOpts}</select>
+      </div>
+    </div>
+
+    <div class="s-section-label" style="margin-top:22px">about accounts</div>
+    <div class="s-card">
+      <p style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);line-height:1.7">
+        <strong style="color:var(--text)">Can I have real user accounts?</strong><br><br>
+        Not in this single HTML file — data is stored in your browser's localStorage, which is local-only. To add real accounts you'd need a backend (e.g. Firebase, Supabase) + a login flow (Google/email).<br><br>
+        <strong style="color:var(--text)">Ideas for settings to add later:</strong><br>
+        · Dark mode toggle<br>
+        · Custom quote of the day<br>
+        · Notification reminders (via browser notifications)<br>
+        · Scroll point conversion rate editor<br>
+        · Export / import data as JSON<br>
+        · Streak counter (days in a row with &gt;0 pts)<br>
+        · Daily goal target (e.g. aim for 10 pts)
+      </p>
+    </div>
+  </div>`;
+}
+
+function setClaimHour(val) {
+  claimHour = parseInt(val);
+  save(); renderScrollTab();
+}
+
+// ═══════════════════════════════════════════════
+// MIDNIGHT + TIMERS
+// ═══════════════════════════════════════════════
+function msUntilMidnight() {
+  const now = new Date(), m = new Date(now); m.setHours(24,0,0,0); return m - now;
+}
+
+function applyMissedPenalties() {
+  MANDATORY.forEach((m, i) => {
+    if (!mandatoryDone[i]) {
+      scrollPoints = Math.max(0, scrollPoints - m.points);
+      pointsLog.push({ task: `❌ missed: ${m.task}`, pts: -m.points });
+    }
+  });
+}
+
+function scheduleMidnightReset() {
+  setTimeout(() => {
+    progression[todayStr()] = scrollPoints;
+    applyMissedPenalties();
+    save();
+    initFresh(); save(); renderAll();
+    scheduleMidnightReset();
+  }, msUntilMidnight());
+}
+
+function scheduleHourWatch() {
+  setTimeout(() => { renderAll(); scheduleHourWatch(); }, 60000);
+}
+
+// ── CLOCK ──
+function updateClock() {
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const dayEl = document.getElementById('clock-day');
+  const timeEl = document.getElementById('clock-time');
+  if (dayEl) dayEl.textContent = days[now.getDay()];
+  if (timeEl) timeEl.textContent = `${hh}:${mm}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+load(); renderAll(); scheduleMidnightReset(); scheduleHourWatch();
+</script>
+</body>
+</html>
